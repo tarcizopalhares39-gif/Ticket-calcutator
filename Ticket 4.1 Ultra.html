@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Proj. Ticket Alimentação - Multi-Card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-amoled: #000000;
+            --neon-blue: #00f3ff;
+            --correios-yellow: #feda00;
+            --neon-green: #39ff14;
+            --neon-alert: #ffff00;
+            --neon-red: #ff003c;
+            --dark-blue: #001a4d;
+            --deep-blue: #002288;
+        }
+
+        body {
+            /* Fundo degradê azul escuro de cima para baixo até a metade, depois AMOLED */
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--bg-amoled) 50%, var(--bg-amoled) 100%);
+            background-attachment: fixed;
+            color: #f0f0f0;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* TELA DE SPLASH */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Fundo idêntico ao do body para transição perfeita */
+            background: linear-gradient(180deg, var(--dark-blue) 0%, var(--bg-amoled) 50%, var(--bg-amoled) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+
+        /* Card Flutuante 3D na Splash */
+        .splash-card {
+            background: linear-gradient(180deg, #111111 0%, #050505 100%);
+            border-radius: 20px;
+            padding: 40px 50px;
+            border-top: 3px solid var(--neon-blue);
+            box-shadow: 0 8px 0 #000000, 0 25px 30px rgba(0,0,0,0.9), inset 0 15px 40px -10px rgba(0, 243, 255, 0.4);
+            animation: floatCard 3s ease-in-out infinite;
+            text-align: center;
+        }
+
+        .splash-text {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ffffff, var(--neon-blue));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* CONTEÚDO PRINCIPAL (TELA INICIAL) */
+        #main-content {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding-top: 30px;
+            /* Container oculto por padrão, mas sem opacidade global para permitir a cascata */
+            display: none; 
+        }
+
+        .sys-init {
+            color: var(--neon-blue);
+            font-size: 0.8rem;
+            text-align: center;
+            animation: pulse-blue 2s infinite;
+            margin-bottom: -5px;
+        }
+
+        /* Classes de Animação em Cascata */
+        .cascade-item {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        #main-content.visible {
+            display: flex;
+        }
+
+        #main-content.visible .cascade-item {
+            animation: cascadeUp 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.3s; }
+        .delay-3 { animation-delay: 0.5s; }
+        .delay-4 { animation-delay: 0.7s; }
+
+        @keyframes cascadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* BASE DOS CARDS SKEUOMÓRFICOS 3D */
+        .card {
+            background: linear-gradient(180deg, #111111 0%, #050505 100%);
+            border-radius: 20px;
+            padding: 25px 20px;
+            /* Física 3D: espessura + sombra projetada */
+            box-shadow: 0 6px 0 #000000, 0 15px 20px rgba(0,0,0,0.9);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: none;
+        }
+
+        /* BORDAS LUMINOSAS (Luminous Edges) + INSET GLOW */
+        .card-input {
+            border-top: 3px solid var(--neon-blue);
+            box-shadow: 0 6px 0 #000000, 0 15px 20px rgba(0,0,0,0.9), inset 0 15px 30px -10px rgba(0, 243, 255, 0.35);
+        }
+
+        .card-days {
+            border-top: 3px solid var(--correios-yellow);
+            box-shadow: 0 6px 0 #000000, 0 15px 20px rgba(0,0,0,0.9), inset 0 15px 30px -10px rgba(254, 218, 0, 0.25);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-result {
+            border-top: 3px solid #b026ff; /* Tom roxo/magenta para variar os neons */
+            box-shadow: 0 6px 0 #000000, 0 15px 20px rgba(0,0,0,0.9), inset 0 15px 30px -10px rgba(176, 38, 255, 0.3);
+            min-height: 150px;
+        }
+
+        /* Estilos Internos dos Cards */
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0a0a0;
+        }
+
+        .input-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 90%;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--neon-blue);
+            color: #f0f0f0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            padding: 10px 0;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .days-highlight {
+            color: var(--correios-yellow);
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(254, 218, 0, 0.4);
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* ANIMAÇÕES PRESERVADAS */
+        .status-green { color: var(--neon-green); text-shadow: 0 0 15px rgba(57, 255, 20, 0.4); }
+        .status-yellow { color: var(--neon-alert); text-shadow: 0 0 15px rgba(255, 255, 0, 0.4); }
+        .status-red { color: var(--neon-red); text-shadow: 0 0 15px rgba(255, 0, 60, 0.4); animation: pulse-glow-red 0.5s infinite alternate; }
+
+        @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse-glow-red { from { transform: scale(1); } to { transform: scale(1.02); } }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-card">
+            <div class="splash-text">TICKET 4.1<br>ULTRA</div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div class="sys-init cascade-item delay-1">>> PROJECTION SYSTEM READY</div>
+
+        <div class="card card-input cascade-item delay-2">
+            <h2>Saldo Disponível</h2>
+            <div class="input-wrapper">
+                <input type="number" id="saldoAtual" placeholder="0,00" step="0.01" oninput="calcularProjecao()">
+            </div>
+        </div>
+
+        <div class="card card-days cascade-item delay-3">
+            <div>
+                <span>Ciclo encerra em: </span>
+                <span class="days-highlight" id="diasCount">--</span> <span>dias (Dia 13)</span>
+            </div>
+        </div>
+
+        <div class="card card-result cascade-item delay-4">
+            <div class="result-label">Cota Diária Projetada</div>
+            <div class="result-value" id="valorProjetado">R$ 0,00</div>
+            <div class="status-message" id="mensagemStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica da Tela de Inicialização adaptada para a cascata
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                const mainContent = document.getElementById('main-content');
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    // Adiciona a classe que dispara as animações CSS de cascata
+                    mainContent.classList.add('visible');
+                }, 800);
+            }, 3000);
+        });
+
+        // LÓGICA MANTIDA INTACTA
+        function getDiasAteProximo13() {
+            const hoje = new Date();
+            let proximo13 = new Date(hoje.getFullYear(), hoje.getMonth(), 13);
+            if (hoje.getDate() >= 13) {
+                proximo13.setMonth(proximo13.getMonth() + 1);
+            }
+            const diferencaTempo = proximo13.getTime() - hoje.getTime();
+            return Math.ceil(diferencaTempo / (1000 * 3600 * 24));
+        }
+
+        let diasRestantes = getDiasAteProximo13();
+        document.getElementById('diasCount').innerText = diasRestantes;
+
+        let animationFrameId;
+
+        function calcularProjecao() {
+            const inputElement = document.getElementById('saldoAtual');
+            const inputSaldo = inputElement.value;
+            const saldo = parseFloat(inputSaldo);
+            const displayValor = document.getElementById('valorProjetado');
+            const displayMensagem = document.getElementById('mensagemStatus');
+
+            localStorage.setItem('ticketSaldoSalvo', inputSaldo);
+
+            if (isNaN(saldo) || saldo <= 0) {
+                displayValor.innerText = "R$ 0,00";
+                displayValor.className = "result-value"; 
+                displayMensagem.innerText = "";
+                return;
+            }
+
+            const valorDiario = saldo / diasRestantes;
+            
+            let classeCor = "";
+            let frase = "";
+
+            if (valorDiario >= 50) {
+                classeCor = "status-green";
+                frase = "ÓTIMO SALDO DISPONÍVEL";
+            } else if (valorDiario >= 35 && valorDiario < 50) {
+                classeCor = "status-yellow";
+                frase = "MODERE OS GASTOS EXTRAS";
+            } else {
+                classeCor = "status-red";
+                frase = "ALERTA: ECONOMIA CRÍTICA";
+            }
+
+            displayMensagem.innerText = frase;
+            displayMensagem.className = `status-message ${classeCor}`;
+
+            animarNumeros(displayValor, valorDiario, classeCor);
+        }
+
+        function animarNumeros(elemento, valorFinal, classeCor) {
+            let startTimestamp = null;
+            const duration = 800; 
+            const valorInicial = 0;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            elemento.className = `result-value ${classeCor}`;
+
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const easeOutProgress = progress * (2 - progress);
+                const valorAtual = valorInicial + (valorFinal - valorInicial) * easeOutProgress;
+                elemento.innerText = `R$ ${valorAtual.toFixed(2).replace('.', ',')}`;
+                if (progress < 1) {
+                    animationFrameId = requestAnimationFrame(step);
+                } else {
+                    elemento.innerText = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+                }
+            };
+            animationFrameId = requestAnimationFrame(step);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saldoGuardado = localStorage.getItem('ticketSaldoSalvo');
+            if (saldoGuardado) {
+                document.getElementById('saldoAtual').value = saldoGuardado;
+                calcularProjecao();
+            }
+        });
+    </script>
+</body>
+</html>
